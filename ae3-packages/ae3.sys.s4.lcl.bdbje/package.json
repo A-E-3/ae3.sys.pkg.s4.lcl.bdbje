@@ -1,0 +1,7 @@
+{
+	"type" : "ae3.Package",
+	"name" : "ae3.sys.s4.lcl.bdbje",
+	"description" : "AE3 S4 Local Driver: Oracle BerkleyDB JE (bdbje)",
+	"provides" : "s4.bdbje",
+	"requires" : ["ae3.pkg.lib.bdbje", "ae3.sys.s4"]
+}

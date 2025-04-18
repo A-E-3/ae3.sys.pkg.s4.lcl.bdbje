@@ -1,0 +1,255 @@
+[111h2 /]: bdbj records lcl
+{
+  "name":"lcl",
+  "counts":{
+    "guid":124995238,
+    "index":188135449,
+    "item":124557149,
+    "queue":124433250,
+    "tail":101565864,
+    "tree":235694082,
+    "usage":77317714
+  }
+}
+
+[ndss112o1.ndm9.xyz /]: time bdbj records lcl
+{canning table: usage...
+  "name":"lcl",
+  "counts":{
+    "guid":52951606,
+    "index":137045035,
+    "item":52851477,
+    "queue":52850925,
+    "tail":30038972,
+    "tree":162514843,
+    "usage":30222994
+  }
+}
+time: calendarTime=5.15 hour(s), continiousTicks=18.53T
+[ndss112o1.ndm9.xyz /]: 
+
+[ndss111h2.ndm9.xyz /]: time bdbj records lcl
+{canning table: usage...
+  "name":"lcl",
+  "counts":{
+    "guid":94291879,
+    "index":154622542,
+    "item":93762840,
+    "queue":93584475,
+    "tail":70679031,
+    "tree":185332462,
+    "usage":43823803
+  }
+}
+time: calendarTime=4.32 hour(s), continiousTicks=15.57T
+[ndss111h2.ndm9.xyz /]:
+
+[ndss111r3.ndm9.xyz /]: time bdbj records lcl
+{canning table: usage...
+  "name":"lcl",
+  "counts":{
+    "guid":99402438,
+    "index":140572061,
+    "item":99215565,
+    "queue":99153174,
+    "tail":81404871,
+    "tree":184247750,
+    "usage":64445353
+  }
+}
+time: calendarTime=4.15 hour(s), continiousTicks=14.94T
+[ndss111r3.ndm9.xyz /]: 
+
+[ndss112r3.ndm9.xyz /]: time bdbj records lcl
+{canning table: usage...
+  "name":"lcl",
+  "counts":{
+    "guid":111518589,
+    "index":139290057,
+    "item":111335592,
+    "queue":111258002,
+    "tail":93559151,
+    "tree":185158667,
+    "usage":63740185
+  }
+}
+time: calendarTime=5.14 hour(s), continiousTicks=18.51T
+[ndss112r3.ndm9.xyz /]: 
+
+[ndss112h2.ndm9.xyz /]: time bdbj records lcl
+Scanning table: queue...
+  "counts":{
+    "guid":125139456,
+    "index":189210120,
+    "item":124837259,
+    "queue":124808393,
+    "tail":101191681,
+    "tree":237126732,
+    "usage":76492118
+  }
+}
+time: calendarTime=10.37 hour(s), continiousTicks=37.33T
+[ndss112h2.ndm9.xyz /]:
+
+
+// ls /storage/data/ndss/licenses/449668209894574/recent
+
+// TODO: bdbj repair lcl tail
+// S4Local: BDBJE, data=/usr/local/ae3/private/data/bdbj-lcl has no property called "createRepairGuidIterator"
+
+start time s4 check --all --full --fix --purge lcl bdbj
+start time s4 check --all --full --fix --purge --slow lcl bdbj
+
+
+
+
+
+start time s4 check --all --full --purge --fix --scan-item lcl bdbj
+start time s4 check --some --full --purge --scan-item lcl bdbj
+start time s4 check --some --full --scan-item lcl bdbj
+
+### check test
+start time s4 check --some --full --purge --fix --scan-item lcl bdbj
+start time s4 check --some --full --purge --fix --verbose --scan-item lcl bdbj
+
+bdbj read lcl item --limit 10
+
+
+  
+  
+start time s4 check --all --full --purge --fix --scan-guid lcl bdbj
+start time s4 check --all --full --purge --fix --slow --scan-guid lcl bdbj
+start time s4 check --all --full --scan-guid lcl bdbj
+start time s4 check --all --full --slow --scan-guid lcl bdbj
+start time s4 check --some --full --scan-guid lcl bdbj
+start time s4 check --some --full --slow --scan-guid lcl bdbj
+
+### check test
+start time s4 check --some --full --purge --fix --scan-guid lcl bdbj
+start time s4 check --some --full --purge --fix --verbose --scan-guid lcl bdbj
+
+bdbj read lcl guid --limit 2
+  
+bdbj read lcl guid --limit 10 --start azimuth:65536
+bdbj read lcl guid --limit 10 --start guid:Guid('b64','frvpoBsHRFcqKDnxuvIKbx_fGqiLzUT9')
+
+bdbj read lcl guid --strict luid+guid:430065:Guid(null)
+bdbj delete lcl guid --delete --force-delete --strict luid+guid:430065:Guid(null)
+
+
+
+bdbj read lcl guid --limit 10000 --prefix azimuth:17998828
+bdbj read lcl guid --limit 1000 --prefix guid:Guid('b64','hZ8OOGNiNNQVvM755iQ5vjnzGLpEHBj_1244G64neAGUf_JCi_HWWVMZnx3xpLcC9W')
+
+
+start time s4 check --all --full --purge --fix --scan-queue lcl bdbj
+start time s4 check --some --full --scan-queue lcl bdbj
+start time s4 check --some --full --slow --scan-queue lcl bdbj
+
+### check test
+start time s4 check --some --full --purge --fix --scan-queue lcl bdbj
+start time s4 check --some --full --purge --fix --verbose --scan-queue lcl bdbj
+
+bdbj read lcl queue --limit 10 
+bdbj read lcl queue --limit 3000 --start schedule:5000
+bdbj read lcl queue --limit 10 --start schedule:50000
+bdbj read lcl queue --limit 10 --start schedule:fresh
+bdbj read lcl queue --limit 10 --start schedule:current
+  {
+    "key0_schedule2":433,
+    "key1_luid6":27999148
+  },
+  
+  
+
+start time s4 check --all --full --purge --fix --scan-tail lcl bdbj
+start time s4 check --some --full --scan-tail lcl bdbj
+start time s4 check --some --full --slow --scan-tail lcl bdbj
+start time s4 check --some --full --purge --fix --scan-tail lcl bdbj
+start time s4 check --some --full --purge --fix --slow --scan-tail lcl bdbj
+start time s4 check --all --full --purge --fix --slow --scan-tail lcl bdbj
+
+### check test
+start time s4 check --some --full --purge --fix --scan-tail lcl bdbj
+start time s4 check --some --full --purge --fix --verbose --scan-tail lcl bdbj
+
+bdbj read lcl tail --limit 1
+bdbj read lcl tail --limit 10 
+  {
+    "key0_luid6":245,
+    "val0_dataX":Binary('c2VydmljZXRhZyxzZXJ2aWNlcGFzcyx3bGFuc3NpZCxjb3VudHJ5LG5kbWh3aWQsY3RybHN1bQ==')
+  },
+  {
+    "key0_luid6":246,
+    "val0_dataX":Binary('JHtsaWNlbnNlfSwke3NlcnZpY2Uta2V5fSxSb3N0ZWxlY29tX0luYWN0aXZhdGVkLFJVLGtnX3JiX3J0LCR7aGFzaC1tZDV9')
+  },
+
+
+
+
+start time s4 check --all --full --purge --fix --scan-tree lcl bdbj
+start time s4 check --some --full --purge --fix --scan-tree lcl bdbj
+start time s4 check --some --full --purge --fix --slow --scan-tree lcl bdbj
+
+### check test
+start time s4 check --some --full --purge --fix --scan-tree lcl bdbj
+start time s4 check --some --full --purge --fix --verbose --scan-tree lcl bdbj
+
+bdbj read lcl tree --limit 10 
+bdbj read lcl tree --limit 10 --start luid:4
+bdbj read lcl tree --limit 100 --start luid:8056042
+bdbj read lcl tree --limit 10 --start luid:19299090
+
+
+bdbj read lcl tree --limit 50 --start luid+key:4:'periodic'
+bdbj read lcl tree --limit 50 --start luid+key:4:'periodic' --stop luid:5
+bdbj read lcl tree --limit 50 --prefix luid+key:4:'periodic'
+bdbj read lcl tree --limit 50 --strict luid+key:4:'periodic'
+bdbj read lcl tree --limit 50 --start luid:4 --stop luid:5
+
+
+start time s4 check --all --full --purge --fix --scan-index lcl bdbj
+start time s4 check --some --full --scan-index lcl bdbj
+start time s4 check --some --full --slow --scan-index lcl bdbj
+
+### check test
+start time s4 check --some --full --purge --fix --scan-index lcl bdbj
+start time s4 check --some --full --purge --fix --verbose --scan-index lcl bdbj
+
+bdbj read lcl index --limit 10 
+bdbj read lcl index --limit 10 --filter key:'scheduleTicks'
+bdbj read lcl index --limit 10 --start key:'keenetic'
+bdbj read lcl index --limit 10 --start key:'egr'
+bdbj read lcl index --limit 10 --start key:'ru'
+bdbj read lcl index --limit 10 --start key:'sunnydale'
+bdbj read lcl index --limit 10 --start key:'name'
+bdbj read lcl index --limit 10 --start key:'serial'
+
+bdbj read lcl index --limit 100 --filter key:'key'
+bdbj read lcl index --limit 100 --filter key:'key';target:''
+
+
+  {
+    "key0_keyX":Guid("exsb"),
+    "key1_targetX":Guid(true),
+    "key2_luid6":7623508
+  },
+
+start time s4 check --all --full --purge --fix --scan-usage lcl bdbj
+start time s4 check --some --full --scan-usage lcl bdbj
+start time s4 check --some --full --slow --scan-usage lcl bdbj
+
+### check test
+start time s4 check --some --full --purge --fix --scan-usage lcl bdbj
+start time s4 check --some --full --purge --fix --verbose --scan-usage lcl bdbj
+
+bdbj read lcl usage --limit 10
+bdbj read lcl usage --limit 10
+bdbj read lcl usage --prefix target:Guid('b64','Q0fqbFk2GYoe1P4KLoc8wR0pQKPC0yboGXAEXMBhfJuepzBC9PFfW0ADfOKc1mWEzm')
+  {
+    "key0_targetX":Guid('b64','Q0fqbFk2GYoe1P4KLoc8wR0pQKPC0yboGXAEXMBhfJuepzBC9PFfW0ADfOKc1mWEzm'),
+    "key1_luid6":9257894,
+    "key2_keyX":Guid("serial")
+  },
+  
+

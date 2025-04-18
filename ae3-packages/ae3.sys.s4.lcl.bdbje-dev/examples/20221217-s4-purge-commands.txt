@@ -1,0 +1,64 @@
+###
+### check scan guid - for purging start here 8)
+###
+
+# start time s4 check --some --scan-guid lcl bdbj
+# start time s4 check --some --full --fix --scan-guid lcl bdbj
+# start time s4 check --some --full --purge --fix --scan-guid lcl bdbj
+
+# start time s4 check --rand --scan-guid lcl bdbj
+# start time s4 check --rand --full --fix --scan-guid lcl bdbj
+# start time s4 check --rand --full --purge --fix --scan-guid lcl bdbj
+# time s4 check --rand --full --purge --fix --scan-guid lcl bdbj
+
+# time s4 check --rand --full --limit-rows:0 --limit-time:300 --purge --fix --scan-guid lcl bdbj
+# time s4 check --rand --full --limit-rows:0 --limit-time:600 --purge --fix --scan-guid lcl bdbj
+
+# start time s4 check --some --full --purge --fix --start-azimuth:-792000000 --scan-guid lcl bdbj
+# start time s4 check --all --full --purge --fix --start-azimuth:-520180220 --scan-guid lcl bdbj
+
+# start time s4 check --all --full --purge --fix --start-azimuth:202650184 --scan-guid lcl bdbj # 111h2
+# start time s4 check --all --full --purge --fix --start-azimuth:168835972 --scan-guid lcl bdbj # 112h2
+# start time s4 check --all --full --purge --fix --start-azimuth:680397492 --scan-guid lcl bdbj # 111h4
+# start time s4 check --all --full --purge --fix --start-azimuth:648412327 --scan-guid lcl bdbj # 112h4
+
+# start time s4 check --all --full --purge --fix --start-azimuth:266344482 --scan-guid lcl bdbj # 111r4
+# start time s4 check --all --full --purge --fix --start-azimuth:283125979 --scan-guid lcl bdbj # 112r4
+# start time s4 check --all --full --purge --fix --start-azimuth:211109190 --scan-guid lcl bdbj # 111r6
+# start time s4 check --all --full --purge --fix --start-azimuth:152884504 --scan-guid lcl bdbj # 112r6
+
+# start time s4 check --all --full --purge --fix --start-azimuth:235019418 --scan-guid lcl bdbj # 111r5
+# start time s4 check --all --full --purge --fix --start-azimuth:33155567 --scan-guid lcl bdbj # 112r5
+
+# start time s4 check --all --full --purge --fix --scan-guid lcl bdbj
+
+###
+###
+###
+
+#start time s4 check --some --full --purge --fix --scan-guid lcl bdbj
+#start time s4 check --some --full --purge --fix --scan-tail lcl bdbj
+#start time s4 check --some --full --purge --fix --scan-tail --scan-queue lcl bdbj
+#start time s4 check --some --full --purge --fix --scan-item lcl bdbj
+start time s4 check --some --full --purge --fix --scan-tree lcl bdbj
+start time s4 check --some --full --purge --fix --scan-index --scan-usage lcl bdbj
+
+time s4 check --some --full --purge --fix --scan-guid --scan-tail --scan-item --scan-queue lcl bdbj
+start time s4 check --some --full --purge --fix --scan-guid --scan-tail --scan-item --scan-queue lcl bdbj
+
+start time s4 check --all --full --purge --fix --scan-tail --scan-queue lcl bdbj
+#start time s4 check --all --full --purge --fix --scan-item lcl bdbj
+start time s4 check --all --full --purge --fix --scan-tree lcl bdbj
+start time s4 check --all --full --purge --fix --scan-index --scan-usage lcl bdbj
+start time s4 check --all --full --purge --fix --scan-tree --scan-index --scan-usage lcl bdbj
+
+start time s4 check --all --full --purge --fix --scan-guid --scan-tail --scan-item --scan-queue lcl bdbj
+
+# start time s4 check --some --full --purge --fix --scan-tree lcl bdbj
+
+# start time s4 check --some --full --purge --fix lcl bdbj
+# start time s4 check --all --full --purge --fix lcl bdbj
+
+
+start time s4 check --verbose --some --full --purge --fix --start-azimuth:-93990177 --scan-guid lcl bdbj
+start time s4 check --some --full --purge --fix --start-azimuth:-93990177 --scan-guid lcl bdbj

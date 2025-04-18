@@ -1,0 +1,349 @@
+start time s4 check --all --full --purge --fix lcl bdbj
+start time bdbj records lcl
+
+
+[ndss-rz.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-rz.ndm9.xyz /]: [400508682]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+stage: CHECK_DONE
+done.
+[400508682]finished, 23967586 items checked, 0/0 errors/warnings, 0 problems fixed.
+time: calendarTime=1.69 hour(s), continiousTicks=6.1T
+[400508682]+ Done       time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+
+[ndss-rz.ndm9.xyz bdbj show lcl
+{
+  "name":"lcl",
+  "size":4951111984,
+  "sizeFormatted":"4.61 G",
+  "totalLogSize":4850898892,
+  "totalLogSizeFormatted":"4.52 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-11T12:24:26.528Z",
+    "lastTTL":"16.46 hour(s)",
+    "lastAvail":"45.7%"
+  }
+}
+[ndss-rz.ndm9.xyz /]: 
+-rz.xyz
+bdbj records lcl
+{
+  "name":"lcl",
+  "counts":{
+    "guid":1955421,
+    "index":5697941,
+    "item":1955424,
+    "queue":1955424,
+    "tail":183240,
+    "tree":10438902,
+    "usage":1781510
+  }
+}
+
+
+[ndss-hz.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-hz.ndm9.xyz /]: [135188668]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+stage: CHECK_DONE
+done.
+[135188668]finished, 23748692 items checked, 0/0 errors/warnings, 0 problems fixed.
+time: calendarTime=1.4 hour(s), continiousTicks=5.03T
+[135188668]+ Done       time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+[ndss-hz.ndm9.xyz /]: bdbj show lcl
+{
+  "name":"lcl",
+  "size":4704401348,
+  "sizeFormatted":"4.38 G",
+  "totalLogSize":4596173850,
+  "totalLogSizeFormatted":"4.28 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-11T12:06:32.789Z",
+    "lastTTL":"13.84 hour(s)",
+    "lastAvail":"38.4%"
+  }
+}
+[ndss-hz.ndm9.xyz /]: 
+-hz.xyz
+{
+    "guid":1900554,
+    "index":5698106,
+    "item":1900557,
+    "queue":1900557,
+    "tail":128381,
+    "tree":10439102,
+    "usage":1781507
+}
+
+
+[ndss-o1.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-o1.ndm9.xyz /]: [2925799]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+stage: CHECK_DONE
+done.
+[2925799]finished, 99121875 items checked, 0/0 errors/warnings, 0 problems fixed.
+time: calendarTime=4.17 hour(s), continiousTicks=15.01T
+[2925799]+ Done         time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+[ndss-o1.ndm9.xyz /]: bdbj show lcl
+{
+  "name":"lcl",
+  "size":15053963163,
+  "sizeFormatted":"14.02 G",
+  "totalLogSize":14973293921,
+  "totalLogSizeFormatted":"13.94 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-11T14:52:33.746Z",
+    "lastTTL":"18.3 hour(s)",
+    "lastAvail":"50.8%"
+  }
+}
+[ndss-o1.ndm9.xyz /]: 
+-o1.xyz
+{
+    "guid":7600829,
+    "index":23091458,
+    "item":7600829,
+    "queue":7600829,
+    "tail":10630,
+    "tree":45622379,
+    "usage":7595483
+}
+
+
+[ndss-h2.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-h2.ndm9.xyz /]: [1142964900]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+stage: CHECK_DONE
+done.
+[1142964900]finished, 99181897 items checked, 0/0 errors/warnings, 0 problems fixed.
+time: calendarTime=7.3 hour(s), continiousTicks=26.27T
+[1142964900]+ Done      time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+[ndss-h2.ndm9.xyz /]: bdbj show lcl
+{
+  "name":"lcl",
+  "size":15301644294,
+  "sizeFormatted":"14.25 G",
+  "totalLogSize":15195490183,
+  "totalLogSizeFormatted":"14.15 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-11T20:24:48.223Z",
+    "lastTTL":"7.93 hour(s)",
+    "lastAvail":"22%"
+  }
+}
+[ndss-h2.ndm9.xyz /]:-h2.xyz
+{
+    "guid":7609700,
+    "index":23103931,
+    "item":7609702,
+    "queue":7609702,
+    "tail":17173,
+    "tree":45635239,
+    "usage":7597247
+}
+
+
+[ndss-h3.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-h3.ndm9.xyz /]: [1610451540]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+stage: CHECK_DONE
+done.
+[1610451540]finished, 97357053 items checked, 0/0 errors/warnings, 0 problems fixed.
+time: calendarTime=55.81 minute(s), continiousTicks=3.35T
+[1610451540]+ Done      time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+[ndss-h3.ndm9.xyz /]: bdbj show lcl
+{
+  "name":"lcl",
+  "size":14397166082,
+  "sizeFormatted":"13.41 G",
+  "totalLogSize":14354603466,
+  "totalLogSizeFormatted":"13.37 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-11T11:36:22.571Z",
+    "lastTTL":"22.04 hour(s)",
+    "lastAvail":"61.2%"
+  }
+}
+[ndss-h3.ndm9.xyz /]: 
+-h3.xyz
+{
+    "guid":7492183,
+    "index":22470431,
+    "item":7492183,
+    "queue":7492183,
+    "tail":7761,
+    "tree":44912461,
+    "usage":7491290
+}
+
+
+[ndss-r3.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-r3.ndm9.xyz /]: [1400428484]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','cbq8nmfFDeWWVr_0O68OsvU2IUF1xk6w'),"key1_luid6":6,"key2_keyX":Guid("orders")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','fnicFz1rfxEfhDDBehvEgtVZMjsmHoxF'),"key1_luid6":134325,"key2_keyX":Guid("bt-2012-11-22_01;real")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','hZ_JoOFtIBf1Osc7sPH7EeqbEmNZcbIVr8f4TxSeoD5lMesP1fRz-uLO8T-gKZrGWG'),"key1_luid6":156561,"key2_keyX":Guid("exportColumnFormat")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','hc_qIgV4pg_wTIXW5-TmcinvJtCvgmau21-af-ZWzvYuDy-aiEIruwZfd9CuGKq4T0'),"key1_luid6":158640,"key2_keyX":Guid("lastComponents")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','hdleCLkqg2MAZ5gqbiS7px7ZlsRViwFoVPqqLMDMR3lxa0I1jU15vq4EIlJjmVJaNG'),"key1_luid6":158640,"key2_keyX":Guid("lastComponents")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','hf5BCqC6WP2sHfmndhCoE_EiRukzsz0i9beMTdazNFNA5FrDeL8P49H5jpRGQWXAzm'),"key1_luid6":158640,"key2_keyX":Guid("lastComponents")}
+stage: CHECK_DONE
+done.
+[1400428484]finished, 137612488 items checked, 0/0 errors/warnings, 6 problems fixed.
+time: calendarTime=1.23 day(s), continiousTicks=106.3T
+[1400428484]+ Done      time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+[ndss-r3.ndm9.xyz /]: bdbj show lcl
+{
+  "name":"lcl",
+  "size":28670990949,
+  "sizeFormatted":"26.7 G",
+  "totalLogSize":28561536988,
+  "totalLogSizeFormatted":"26.6 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-12T21:58:34.590Z",
+    "lastTTL":"8.55 hour(s)",
+    "lastAvail":"23.7%"
+  }
+}
+[ndss-r3.ndm9.xyz /]: 
+-r3.xyz
+{
+    "guid":10815093,
+    "index":35907925,
+    "item":10815095,
+    "queue":10815095,
+    "tail":27853,
+    "tree":58439274,
+    "usage":10795120
+}
+
+
+
+[ndss-t1.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-t1.ndm9.xyz /]: [515048058]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+stage: CHECK_DONE
+done.
+[515048058]finished, 92558968 items checked, 0/0 errors/warnings, 0 problems fixed.
+time: calendarTime=5.29 hour(s), continiousTicks=19.06T
+[515048058]+ Done   time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+[ndss-t1.ndm9.xyz /]: bdbj show lcl
+{
+  "name":"lcl",
+  "size":14217643261,
+  "sizeFormatted":"13.24 G",
+  "totalLogSize":14118920926,
+  "totalLogSizeFormatted":"13.15 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-11T16:08:53.684Z",
+    "lastTTL":"23.05 hour(s)",
+    "lastAvail":"64%"
+  }
+}
+[ndss-t1.ndm9.xyz /]: 
+-t1.xyz
+{
+    "guid":7636525,
+    "index":29458794,
+    "item":7636529,
+    "queue":7636529,
+    "tail":88554,
+    "tree":32524718,
+    "usage":7582776
+}
+
+
+[ndss-t2.ndm9.xyz /]: start time s4 check --all --full --fix --purge lcl bdbj
+[ndss-t2.ndm9.xyz /]: [687251125]
+stage: CHECK_SCAN_ITEM
+stage: CHECK_SCAN_ITEM_GUID
+stage: CHECK_SCAN_ITEM_QUEUE
+stage: CHECK_SCAN_TAIL
+stage: CHECK_SCAN_TREE
+stage: CHECK_SCAN_TREE_INDEX
+stage: CHECK_SCAN_TREE_USAGE
+stage: CHECK_DONE
+done.
+[687251125]finished, 92566237 items checked, 0/0 errors/warnings, 0 problems fixed.
+time: calendarTime=6.85 hour(s), continiousTicks=24.67T
+[687251125]+ Done       time,s4,check,--all,--full,--fix,--purge,lcl,bdbj
+[ndss-t2.ndm9.xyz /]: bdbj show lcl
+{
+  "name":"lcl",
+  "size":13373959221,
+  "sizeFormatted":"12.46 G",
+  "totalLogSize":13347582989,
+  "totalLogSizeFormatted":"12.43 G",
+  "cleanerBacklog":0,
+  "path":"/usr/local/ae3/private/data/bdbj-lcl",
+  "delayExpunge":{
+    "lastDate":"2020-09-11T17:55:32.075Z",
+    "lastTTL":"23.74 hour(s)",
+    "lastAvail":"65.9%"
+  }
+}
+[ndss-t2.ndm9.xyz /]: 
+-t2.xyz
+{
+    "guid":7624165,
+    "index":29487416,
+    "item":7624165,
+    "queue":7624165,
+    "tail":80737,
+    "tree":32555937,
+    "usage":7572586
+}

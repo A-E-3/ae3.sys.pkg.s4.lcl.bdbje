@@ -1,0 +1,114 @@
+s4 check stage: init CHECK_SCAN_ITEM_GUID
+duplicate guid: {"key0_azimuth4":542472578,"key1_luid6":97016,"val0_schedule2":15196,"val1_guidX":Guid('g64','fbYJQcbyfPlEEzfFhXBpUaMy-jtdqxo1')}
+duplicate guid has children in tree, won't fix: 97016
+duplicate guid: {"key0_azimuth4":542502104,"key1_luid6":111189,"val0_schedule2":15283,"val1_guidX":Guid('g64','ekEXroXkaUkD-68B8P8c2mkxfm9J8npm')}
+duplicate guid has children in tree, won't fix: 111189
+duplicate guid: {"key0_azimuth4":542502104,"key1_luid6":117625,"val0_schedule2":26179,"val1_guidX":Guid('g64','ekEXroXkaUkD-68B8P8c2mkxfm9J8npm')}
+duplicate guid has children in tree, won't fix: 117625
+duplicate guid: {"key0_azimuth4":542596687,"key1_luid6":121198,"val0_schedule2":22932,"val1_guidX":Guid('g64','fG9XV44JdRsvZf3rgE66RmSF2hYwcAXv')}
+duplicate guid has children in tree, won't fix: 121198
+duplicate guid: {"key0_azimuth4":542878605,"key1_luid6":139843,"val0_schedule2":8835,"val1_guidX":Guid('g64','f47zIbSXjXXChh-fJx6MuyX0BVtp89Lu')}
+duplicate guid has children in tree, won't fix: 139843
+duplicate guid: {"key0_azimuth4":543030959,"key1_luid6":110909,"val0_schedule2":17765,"val1_guidX":Guid('g64','e--nVxDgn93eXH9DmgMDqPu2TTyq0bHV')}
+duplicate guid has children in tree, won't fix: 110909
+duplicate guid: {"key0_azimuth4":543112369,"key1_luid6":114327,"val0_schedule2":9414,"val1_guidX":Guid('g64','cmSTJ7VdrzVYVKBZJJGqh91T_c3EpVTe')}
+duplicate guid has children in tree, won't fix: 114327
+duplicate guid: {"key0_azimuth4":543237258,"key1_luid6":148203,"val0_schedule2":27368,"val1_guidX":Guid('g64','eMUyaBGu4IcBE3uVILCZkvw5iS_tovn7')}
+duplicate guid has children in tree, won't fix: 148203
+duplicate guid: {"key0_azimuth4":543258022,"key1_luid6":32711,"val0_schedule2":3994,"val1_guidX":Guid('g64','d11nqwoFJLdTTFOIb8GTPI4p9r8xCYXg')}
+duplicate guid has children in tree, won't fix: 32711
+duplicate guid: {"key0_azimuth4":770118514,"key1_luid6":420023,"val0_schedule2":30587,"val1_guidX":Guid('g64','g8noemcGoS9UJGFAUPdsnMKjkp19hoXz')}
+duplicate guid has children in tree, won't fix: 420023
+duplicate guid: {"key0_azimuth4":770120287,"key1_luid6":174193,"val0_schedule2":29763,"val1_guidX":Guid('g64','fThzvEOlc8m7lYYSRhSR7UcA6gxJ_vFc')}
+duplicate guid has children in tree, won't fix: 174193
+duplicate guid: {"key0_azimuth4":770141014,"key1_luid6":110640,"val0_schedule2":22584,"val1_guidX":Guid('g64','cR_PZS67iMTWPdqxJFhke3SJICM7y60Q')}
+duplicate guid has children in tree, won't fix: 110640
+duplicate guid: {"key0_azimuth4":770466411,"key1_luid6":192201,"val0_schedule2":11642,"val1_guidX":Guid('g64','crj4-8LP0wFGw_Tci506PV1fiNdhQpke')}
+duplicate guid has children in tree, won't fix: 192201
+duplicate guid: {"key0_azimuth4":770518825,"key1_luid6":109311,"val0_schedule2":6270,"val1_guidX":Guid('g64','cg7bTxQaAUTO2mzIITPczKGHiFvrz_UG')}
+duplicate guid has children in tree, won't fix: 109311
+duplicate guid: {"key0_azimuth4":770534965,"key1_luid6":112803,"val0_schedule2":19625,"val1_guidX":Guid('g64','fiY9B3g4aI3qivgHfuIsEWhK-5BlKKWc')}
+duplicate guid has children in tree, won't fix: 112803
+duplicate guid: {"key0_azimuth4":770627841,"key1_luid6":89680,"val0_schedule2":12220,"val1_guidX":Guid('g64','d9SKRdw25zjpMBU0cSlCn8hgzmiC9Z-1')}
+duplicate guid has children in tree, won't fix: 89680
+
+
+
+bdbj readItemsByItemGuid lcl --key azimuth 0
+bdbj readItemsByItemGuid lcl Guid(null)
+bdbj readTreeByItemGuid lcl Guid(null)
+
+bdbj read lcl guid --prefix guid:Guid(null)
+
+==========
+
+bdbj read lcl item --exact luid:103762
+bdbj read lcl item --exact luid:79611
+
+==========
+
+bdbj read lcl guid --limit 100 --prefix guid:Guid('b64','fBJsNM1UsWKxgUxtzRumJLB2WbZ-la8e') 
+bdbj read lcl tree --limit 50 --prefix luid:30221
+bdbj read lcl tree --limit 50 --prefix luid:13474
+
+==========
+
+bdbj delete lcl item --delete --force-delete --exact luid:30221
+bdbj delete lcl tree --delete --force-delete --limit 10 --prefix luid:30221
+
+bdbj delete lcl item --delete --force-delete --exact luid:13474
+bdbj delete lcl tree --delete --force-delete --limit 10 --prefix luid:13474
+
+==========
+
+
+
+[ndss001.ndm9.xyz /]: start time s4 check --all --full --purge --fix --scan-index --scan-usage lcl bdbj
+[ndss001.ndm9.xyz /]: [521557868]
+stage: CHECK_SCAN_TREE_INDEX
+purged orphaned treeIndex record, treeIndex key: {"key0_keyX":Guid("ndss"),"key1_targetX":Guid('b64','eruV_6-UsyO-Ixha3uKcbhS1sTt41aMN'),"key2_luid6":430068}
+purged orphaned treeIndex record, treeIndex key: {"key0_keyX":Guid("periodic"),"key1_targetX":Guid('b64','cyIb4o8UzwY8jFoOrAFj75we2yLXx4pb'),"key2_luid6":430068}
+purged orphaned treeIndex record, treeIndex key: {"key0_keyX":Guid("ndm.client"),"key1_targetX":Guid('b64','cgCGWmQ6rs75ccH7aImdNi2XvsUAT9xR'),"key2_luid6":430068}
+stage: CHECK_SCAN_TREE_USAGE
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','cgCGWmQ6rs75ccH7aImdNi2XvsUAT9xR'),"key1_luid6":430068,"key2_keyX":Guid("ndm.client")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','cyIb4o8UzwY8jFoOrAFj75we2yLXx4pb'),"key1_luid6":430068,"key2_keyX":Guid("periodic")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','eruV_6-UsyO-Ixha3uKcbhS1sTt41aMN'),"key1_luid6":430068,"key2_keyX":Guid("ndss")}
+stage: CHECK_DONE
+done.
+
+
+
+
+[ndss001.ndm9.xyz /]: start time s4 check --all --full --purge --fix --scan-tree lcl bdbj
+[ndss001.ndm9.xyz /]: [1967614615]
+stage: CHECK_SCAN_TREE
+purged orphaned tree record, tree: {"key0_luid6":430065,"key1_keyX":Guid("stats"),"val0_mode1":"PUBLIC_TREE_REFERENCE","val1_modified6":Date('2014-08-08T05:10:58.000Z'),"val2_targetX":Guid('b64','eIN05ziTQ8B9OPyxuqm949uirENIdPGv')}
+purged orphaned tree record, tree: {"key0_luid6":430065,"key1_keyX":Guid("zones"),"val0_mode1":"PUBLIC_TREE_REFERENCE","val1_modified6":Date('2014-08-08T05:10:53.000Z'),"val2_targetX":Guid('b64','fly07HaSSKmHGtawMJmlltneWJaoTMKo')}
+purged orphaned tree record, tree: {"key0_luid6":430065,"key1_keyX":Guid("mounted"),"val0_mode1":"LOCAL_PRIVATE_REFERENCE","val1_modified6":Date('2014-08-08T05:10:49.000Z'),"val2_targetX":Guid(true)}
+purged orphaned tree record, tree: {"key0_luid6":430065,"key1_keyX":Guid("scheduleTicks"),"val0_mode1":"LOCAL_PRIVATE_REFERENCE","val1_modified6":Date('2014-08-13T08:27:11.000Z'),"val2_targetX":Guid(40966)}
+stage: CHECK_DONE
+done.
+[1967614615]finished, 10662691 items checked, 0/0 errors/warnings, 5 problems fixed.
+time: calendarTime=10.84 minute(s), continiousTicks=650.4G
+[1967614615]+ Done      time,s4,check,--all,--full,--purge,--fix,--scan-tree,lcl,bdbj
+
+
+
+
+[ndss001.ndm9.xyz /]: start time s4 check --all --full --purge --fix --scan-index --scan-usage lcl bdbj
+[ndss001.ndm9.xyz /]: [538517071]
+stage: CHECK_SCAN_TREE_INDEX
+purged orphaned treeIndex record, treeIndex key: {"key0_keyX":Guid("data"),"key1_targetX":Guid('b64','cw54fgMFvOUd9_qt2St1xMKiLGLt6HeX'),"key2_luid6":430065}
+purged orphaned treeIndex record, treeIndex key: {"key0_keyX":Guid("stats"),"key1_targetX":Guid('b64','eIN05ziTQ8B9OPyxuqm949uirENIdPGv'),"key2_luid6":430065}
+purged orphaned treeIndex record, treeIndex key: {"key0_keyX":Guid("zones"),"key1_targetX":Guid('b64','fly07HaSSKmHGtawMJmlltneWJaoTMKo'),"key2_luid6":430065}
+stage: CHECK_SCAN_TREE_USAGE
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','cw54fgMFvOUd9_qt2St1xMKiLGLt6HeX'),"key1_luid6":430065,"key2_keyX":Guid("data")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','eIN05ziTQ8B9OPyxuqm949uirENIdPGv'),"key1_luid6":430065,"key2_keyX":Guid("stats")}
+purged orphaned treeUsage record, treeUsage key: {"key0_targetX":Guid('b64','fly07HaSSKmHGtawMJmlltneWJaoTMKo'),"key1_luid6":430065,"key2_keyX":Guid("zones")}
+stage: CHECK_DONE
+done.
+[538517071]finished, 7872552 items checked, 0/0 errors/warnings, 6 problems fixed.
+time: calendarTime=16.73 minute(s), continiousTicks=1T
+[538517071]+ Done       time,s4,check,--all,--full,--purge,--fix,--scan-index,--scan-usage,lcl,bdbj
+
+
