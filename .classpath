@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ae3.api"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ae3.sdk"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ae3.sys"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ae3.pkg.lib.bdbje"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ae3.sys.pkg.s4"/>
+	<classpathentry kind="lib" path="/ae3.pkg.lib.bdbje/ae3-packages/ae3.pkg.lib.bdbje/jars/je-7.5.11.jar" sourcepath="/ae3.pkg.lib.bdbje/incoming/je-7.5.11/src"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
