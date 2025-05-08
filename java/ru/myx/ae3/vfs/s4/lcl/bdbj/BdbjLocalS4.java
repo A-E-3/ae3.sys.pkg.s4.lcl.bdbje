@@ -476,6 +476,8 @@ public class BdbjLocalS4 //
 							: "16384");
 			
 			config.setConfigParam(EnvironmentConfig.CHECKPOINTER_HIGH_PRIORITY, "true");
+			config.setConfigParam(EnvironmentConfig.CHECKPOINTER_BYTES_INTERVAL, "134217728"); // 67108864
+			config.setConfigParam(EnvironmentConfig.CHECKPOINTER_WAKEUP_INTERVAL, "67 s");
 			
 			config.setConfigParam(
 					EnvironmentConfig.ENV_BACKGROUND_READ_LIMIT,
@@ -532,8 +534,11 @@ public class BdbjLocalS4 //
 			/** MIN_FREE_DISK: 3 Gb **/
 			config.setConfigParam(EnvironmentConfig.FREE_DISK, String.valueOf(3L * 1024L * 1024L * 1024L));
 			
-			config.setConfigParam(EnvironmentConfig.CLEANER_MIN_UTILIZATION, "47");
-			config.setConfigParam(EnvironmentConfig.CLEANER_MIN_FILE_UTILIZATION, "23");
+			config.setConfigParam(EnvironmentConfig.CLEANER_MIN_AGE, "3");
+			config.setConfigParam(EnvironmentConfig.CLEANER_MIN_UTILIZATION, "47"); // 47
+			config.setConfigParam(EnvironmentConfig.CLEANER_MIN_FILE_UTILIZATION, "13"); // 23
+
+			/** upgrade old files to current version */
 			config.setConfigParam(EnvironmentConfig.CLEANER_UPGRADE_TO_LOG_VERSION, "-1");
 			config.setConfigParam(
 					EnvironmentConfig.CLEANER_LOOK_AHEAD_CACHE_SIZE, //
@@ -545,7 +550,6 @@ public class BdbjLocalS4 //
 									: Math.min(Transfer.BUFFER_MEDIUM, 16384)//
 					)//
 			);
-			config.setConfigParam(EnvironmentConfig.CLEANER_MIN_AGE, "3");
 			
 			config.setConfigParam(
 					EnvironmentConfig.LOCK_N_LOCK_TABLES, //
@@ -555,7 +559,7 @@ public class BdbjLocalS4 //
 							? "67"
 							: "37"//
 			);
-			config.setConfigParam(EnvironmentConfig.LOG_FILE_MAX, "67108864");
+			config.setConfigParam(EnvironmentConfig.LOG_FILE_MAX, "268435456"); // 67108864
 			
 			config.setConfigParam(
 					EnvironmentConfig.FILE_LOGGING_LEVEL, //
