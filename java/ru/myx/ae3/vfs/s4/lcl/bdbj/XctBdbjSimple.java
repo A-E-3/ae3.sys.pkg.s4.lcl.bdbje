@@ -1,6 +1,5 @@
 package ru.myx.ae3.vfs.s4.lcl.bdbj;
 
-import java.util.Collection;
 import java.util.function.Function;
 
 import com.sleepycat.je.Cursor;
@@ -8,6 +7,7 @@ import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Transaction;
 
+import ru.myx.ae3.common.Value;
 import ru.myx.ae3.know.Guid;
 import ru.myx.ae3.vfs.TreeLinkType;
 
@@ -166,17 +166,6 @@ class XctBdbjSimple //
 	}
 
 	@Override
-	void destroy() {
-
-		if (this.txn == null) {
-			return;
-		}
-		this.closeImpl();
-		this.txn.abort();
-		this.txn = null;
-	}
-
-	@Override
 	public Cursor getCursorItem(final WorkerBdbj local) {
 
 		if (this.cursorItem != null) {
@@ -275,14 +264,23 @@ class XctBdbjSimple //
 	}
 
 	@Override
-	public int searchBetween(final Function<Long, ?> target, final Guid key, final Guid value1, final Guid value2, final int limit) throws Exception {
+	public int searchBetween(//
+			final Function<Value<RecordBdbj>, ?> target,
+			final Guid key,
+			final Guid value1,
+			final Guid value2,
+			final int limit) throws Exception {
 
 		return this.parent.searchBetween(this, target, key, value1, value2, limit);
 
 	}
 
 	@Override
-	public int searchEquals(final Collection<Long> target, final Guid key, final Guid value, final int limit) throws Exception {
+	public int searchEquals(//
+			final Function<Value<RecordBdbj>, ?> target,
+			final Guid key,
+			final Guid value,
+			final int limit) throws Exception {
 
 		return this.parent.searchEquals(this, target, key, value, limit);
 	}
@@ -291,5 +289,16 @@ class XctBdbjSimple //
 	public String toString() {
 
 		return this.getClass().getSimpleName() + " txn=" + this.txn;
+	}
+
+	@Override
+	void destroy() {
+
+		if (this.txn == null) {
+			return;
+		}
+		this.closeImpl();
+		this.txn.abort();
+		this.txn = null;
 	}
 }

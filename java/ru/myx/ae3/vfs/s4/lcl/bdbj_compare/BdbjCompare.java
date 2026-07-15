@@ -34,6 +34,7 @@ import com.sleepycat.je.TransactionConfig;
 import ru.myx.ae3.Engine;
 import ru.myx.ae3.base.BaseObject;
 import ru.myx.ae3.binary.TransferCopier;
+import ru.myx.ae3.common.Value;
 import ru.myx.ae3.e4.act.Manager.Factory.TYPE;
 import ru.myx.ae3.e4.act.ProcessExecutionType;
 import ru.myx.ae3.help.Create;
@@ -83,16 +84,6 @@ public class BdbjCompare
 		return true;
 	}
 
-	/** internal, for command line utility
-	 *
-	 * @return */
-	public static final Map<String, BdbjCompare> internGetInstances() {
-
-		final Map<String, BdbjCompare> result = Create.tempMap();
-		result.putAll(BdbjCompare.INSTANCES);
-		return result;
-	}
-
 	private static final long readLow6AsLong(final byte[] data, final int offset) {
 
 		return ((long) (data[offset + 0] & 255) << 40) + ((long) (data[offset + 1] & 255) << 32) + ((long) (data[offset + 2] & 255) << 24) + ((data[offset + 3] & 255) << 16)
@@ -121,6 +112,16 @@ public class BdbjCompare
 
 		buffer[offset + 0] = (byte) (value >> 8);
 		buffer[offset + 1] = (byte) value;
+	}
+
+	/** internal, for command line utility
+	 *
+	 * @return */
+	public static final Map<String, BdbjCompare> internGetInstances() {
+
+		final Map<String, BdbjCompare> result = Create.tempMap();
+		result.putAll(BdbjCompare.INSTANCES);
+		return result;
 	}
 
 	private final byte[] bufferBytes;
@@ -232,6 +233,20 @@ public class BdbjCompare
 		this.key = new DatabaseEntry();
 		this.value = new DatabaseEntry();
 		this.knownDatabases = new TreeMap<>();
+	}
+
+	private final long lastLuid(final Cursor cursor) {
+
+		final DatabaseEntry key = this.key;
+		final DatabaseEntry value = this.value;
+		final OperationStatus status = cursor.getLast(key, value, null);
+		if (status == OperationStatus.NOTFOUND) {
+			return -1;
+		}
+		if (status == OperationStatus.SUCCESS) {
+			return BdbjCompare.readLow6AsLong(key.getData(), 0);
+		}
+		throw new IllegalStateException("Invalid status: " + status);
 	}
 
 	@Override
@@ -821,20 +836,6 @@ public class BdbjCompare
 		return this.environment.getDatabaseNames();
 	}
 
-	private final long lastLuid(final Cursor cursor) {
-
-		final DatabaseEntry key = this.key;
-		final DatabaseEntry value = this.value;
-		final OperationStatus status = cursor.getLast(key, value, null);
-		if (status == OperationStatus.NOTFOUND) {
-			return -1;
-		}
-		if (status == OperationStatus.SUCCESS) {
-			return BdbjCompare.readLow6AsLong(key.getData(), 0);
-		}
-		throw new IllegalStateException("Invalid status: " + status);
-	}
-
 	@Override
 	public int readCheckReferenced(final BasicQueue<RecordBdbj> pendingRecords, final BasicQueue<RecordBdbj> targetReferenced, final BasicQueue<RecordBdbj> targetUnreferenced)
 			throws Exception {
@@ -1036,7 +1037,12 @@ public class BdbjCompare
 	}
 
 	@Override
-	public int searchBetween(final Function<Long, ?> target, final Guid name, final Guid value1, final Guid value2, final int limit) throws Exception {
+	public int searchBetween(//
+			final Function<Value<RecordBdbj>, ?> target,
+			final Guid name,
+			final Guid value1,
+			final Guid value2,
+			final int limit) throws Exception {
 
 		final int keyLength = Guid.writeGuid(name, this.bufferBytes, 0);
 		final DatabaseEntry key = this.key;
@@ -1070,7 +1076,11 @@ public class BdbjCompare
 	}
 
 	@Override
-	public int searchEquals(final Collection<Long> target, final Guid name, final Guid value1, final int limit) throws Exception {
+	public int searchEquals(//
+			final Function<Value<RecordBdbj>, ?> target,
+			final Guid name,
+			final Guid value1,
+			final int limit) throws Exception {
 
 		final int keyLength = Guid.writeGuid(name, this.bufferBytes, 0);
 		final DatabaseEntry key = this.key;

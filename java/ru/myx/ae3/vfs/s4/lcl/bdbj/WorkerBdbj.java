@@ -28,6 +28,7 @@ import com.sleepycat.je.WriteOptions;
 
 import ru.myx.ae3.Engine;
 import ru.myx.ae3.binary.TransferCopier;
+import ru.myx.ae3.common.Value;
 import ru.myx.ae3.help.Format;
 import ru.myx.ae3.know.Guid;
 import ru.myx.ae3.report.Report;
@@ -235,6 +236,451 @@ public class WorkerBdbj //
 		this.value = new DatabaseEntry();
 		
 		this.local = local;
+	}
+	
+	private void checkEnvironmentBug6() {
+		
+		final Environment environment = this.environment;
+		if (environment != null && !environment.isValid()) {
+			WorkerBdbj.LOG.event(//
+					"BDBJ-WORKER:FAILURE:FATAL",
+					"Environment is invalid!",
+					Format.Throwable.toText(new IllegalStateException("this:" + this + ", env:" + environment))//
+			);
+			try {
+				this.stop();
+			} catch (final Throwable t) {
+				//
+			}
+			try {
+				environment.close();
+			} catch (final Throwable t) {
+				//
+			}
+			Runtime.getRuntime().exit(-37);
+		}
+	}
+	
+	/** @param txn
+	 * @param e
+	 * @throws RuntimeException */
+	private Exception handleTransactionTimeoutException(//
+			final XctBdbj txn,
+			final TransactionTimeoutException e//
+	) {
+		
+		final String text;
+		if (txn == this.xctGlobal) {
+			System.out.println(">>>>>> " + (text = "unexpected global transaction problem: txn=" + txn));
+			this.xctGlobal = this.transactionConfig != null
+				? new XctBdbjTxnTempGlobal(this, this.environment)
+				: new XctBdbjNoTxnGlobal(this);
+			txn.destroy();
+		} else {
+			txn.destroy();
+			System.out.println(">>>>>> " + (text = "unexpected task transaction problem: txn=" + txn));
+		}
+		return new RuntimeException(text, e);
+	}
+	
+	@Override
+	public void commitHighLevel() throws Exception {
+		
+		this.environment.sync();
+		// ignore, low-level faster on BDBJE
+	}
+	
+	@Override
+	public void commitLowLevel() throws Exception {
+		
+		// ignore, low-level faster on BDBJE
+		this.checkEnvironmentBug6();
+	}
+	
+	@Override
+	public XctBdbj createGlobalCommonTransaction() {
+		
+		if (this.transactionConfig == null) {
+			return this.xctGlobal;
+		}
+		this.checkEnvironmentBug6();
+		this.xctGlobal.reset();
+		return this.xctGlobal;
+	}
+	
+	@Override
+	public XctBdbj createNewWorkerTransaction() {
+		
+		if (this.transactionConfig == null) {
+			return this.xctGlobal;
+		}
+		this.checkEnvironmentBug6();
+		this.xctGlobal.reset();
+		return new XctBdbjSimple(this, this.environment.beginTransaction(null, this.transactionConfig), CursorConfig.READ_COMMITTED);
+	}
+	@Override
+	public RecordBdbj createRecordTemplate() {
+		
+		return new RecordBdbjTemplate();
+	}
+	@Override
+	public ReferenceBdbj createReferenceTemplate() {
+		
+		return new ReferenceBdbj();
+	}
+	
+	/** clean log, optional.
+	 *
+	 * @return non zero if something was achieved */
+	public int internStorageClean() {
+		
+		return this.environment.cleanLog();
+	}
+	
+	/** compress, optional. */
+	public void internStorageCompress() {
+		
+		this.environment.compress();
+	}
+	
+	/** force checkpoint, optional. */
+	public void internStorageForce() {
+		
+		final CheckpointConfig force = new CheckpointConfig();
+		force.setMinimizeRecoveryTime(true);
+		force.setForce(true);
+		this.environment.checkpoint(force);
+	}
+	
+	/** @return stats object */
+	public EnvironmentStats internStorageStats() {
+		
+		final StatsConfig config = new StatsConfig();
+		config.setFast(false);
+		return this.environment.getStats(config);
+	}
+	
+	/** sync, optional. Used by manual CLI command. */
+	public void internStorageSync() {
+		
+		this.environment.sync();
+	}
+	
+	/** @return */
+	public List<String> internStorageTables() {
+		
+		return this.environment.getDatabaseNames();
+	}
+	
+	@Override
+	public int readCheckReferenced(//
+			final BasicQueue<RecordBdbj> pendingRecords,
+			final BasicQueue<RecordBdbj> targetReferenced,
+			final BasicQueue<RecordBdbj> targetUnreferenced//
+	) throws Exception {
+		
+		this.checkEnvironmentBug6();
+		
+		final XctBdbjSimple txn = this.xctGlobal;
+		
+		try {
+			final byte[] bufferBytes = this.bufferBytes;
+			final DatabaseEntry key = this.key;
+			int count = 0;
+			
+			/** sort records (probably already sorted) */
+			if (!Engine.MODE_SIZE && pendingRecords.hasNext()) {
+				final SortedSet<RecordBdbj> set = new TreeSet<>(RecImpl.COMPARATOR_RECORD_GUID);
+				for (RecordBdbj record; (record = pendingRecords.pollFirst()) != null;) {
+					set.add(record);
+				}
+				for (final RecordBdbj record : set) {
+					pendingRecords.offerLast(record);
+				}
+			}
+			
+			try (final Cursor cursorTreeUsage = this.dbTreeUsage.openCursor(txn.txn, CursorConfig.READ_COMMITTED)) {
+				records : for (RecordBdbj record; (record = pendingRecords.pollFirst()) != null;) {
+					final Guid guid = record.guid;
+					
+					if (guid == Guid.GUID_NULL) {
+						WorkerBdbj.LOG.event(//
+								"BDBJ-WORKER:FAILURE:SUPPRESSED",
+								"readCheckReferenced is not supposed to get GUID_NULL record, ",
+								Format.Throwable.toText(new IllegalStateException("this:" + this + ", env:" + this.environment))//
+						);
+						targetReferenced.offerLast(record);
+						continue records;
+					}
+					
+					++count;
+					
+					/** (previousTargetX);luid6;keyX */
+					final int guidSize = Guid.writeGuid(guid, bufferBytes, 0);
+					key.setData(bufferBytes, 0, guidSize);
+					
+					/** scan first of multiple **/
+					if (null == cursorTreeUsage.get(key, null, Get.SEARCH_GTE, WorkerBdbj.RO_FOR_SCAN)) {
+						/** not referenced **/
+						targetUnreferenced.offerLast(record);
+						continue records;
+					}
+					
+					/** referenced or not based on found key match **/
+					final byte[] bytes = key.getData();
+					(Guid.readEquals(bytes, 0, guid)
+						? targetReferenced
+						: targetUnreferenced).offerLast(record);
+					
+					/** check next **/
+					continue records;
+				}
+			}
+			return count;
+		} catch (final TransactionTimeoutException e) {
+			throw this.handleTransactionTimeoutException(txn, e);
+		}
+	}
+	
+	@Override
+	public void reset() {
+		
+		if (this.xctGlobal != null) {
+			this.xctGlobal.reset();
+		}
+	}
+	
+	@Override
+	public void searchScheduled(//
+			final short scheduleBits, //
+			final int limit, //
+			final BasicQueue<RecordBdbj> targetScheduled//
+	) throws Exception {
+		
+		this.checkEnvironmentBug6();
+		
+		{
+			final CheckpointConfig force = new CheckpointConfig();
+			force.setMinutes(5);
+			force.setKBytes(16 * 1024);
+			force.setMinimizeRecoveryTime(true);
+			this.environment.checkpoint(force);
+		}
+		
+		final byte[] bufferBytes = new byte[2 + 6];
+		WorkerBdbj.writeShort(bufferBytes, 0, scheduleBits);
+		final DatabaseEntry key = this.key;
+		final DatabaseEntry value = this.value;
+		key.setData(bufferBytes, 0, 2);
+		
+		/** TODO: Not really good condition */
+		if (Engine.MODE_SIZE) {
+			
+			try (XctBdbj xct = this.createNewWorkerTransaction()) {
+				boolean changes = false;
+				selectSchedule : try (final Cursor cursorItemQueue = xct.getCursorItemQueue(this)) {
+					try (final Cursor cursorItem = xct.getCursorItem(this)) {
+						OperationResult status = cursorItemQueue.get(key, null, Get.SEARCH_GTE, WorkerBdbj.RO_FOR_SCAN);
+						nextLuid : for (int left = limit;;) {
+							if (null == status) {
+								break selectSchedule;
+							}
+							final byte[] keyData = key.getData();
+							if (!WorkerBdbj.compareBytes(keyData, 0, bufferBytes, 0, 2)) {
+								break selectSchedule;
+							}
+							final RecordBdbj record = new RecordBdbj();
+							record.luid = WorkerBdbj.readLow6AsLong(keyData, 2);
+							
+							key.setData(keyData, 2, 6);
+							if (null == cursorItem.get(key, value, Get.SEARCH, WorkerBdbj.RO_FOR_SCAN)) {
+								WorkerBdbj.LOG.event(//
+										"BDBJ-WORKER:INVALID:SCHEDULE",
+										"searchScheduled invalid records detected and will be dropped, luid: " + record.luid//
+								);
+								cursorItemQueue.delete(WorkerBdbj.WO_FOR_DROP);
+								changes = true;
+							} else //
+							{
+								record.guid = Guid.readGuid(value.getData(), 2);
+								record.scheduleBits = scheduleBits;
+								targetScheduled.offerLast(record);
+							}
+							if (--left == 0) {
+								break selectSchedule;
+							}
+							status = cursorItemQueue.get(key, null, Get.NEXT, WorkerBdbj.RO_FOR_SCAN);
+							continue nextLuid;
+						}
+					}
+				}
+				if (changes) {
+					xct.commit();
+				}
+			}
+			return;
+		}
+		{
+			final BasicQueue<RecordBdbj> recordsLuids = new FifoQueueLinked<>();
+			final BasicQueue<RecordBdbj> recordsInvalid = new FifoQueueLinked<>();
+			
+			try (XctBdbj xct = this.createGlobalCommonTransaction()) {
+				collectLuids : try (final Cursor cursorItemQueue = xct.getCursorItemQueue(this)) {
+					OperationResult status = cursorItemQueue.get(key, null, Get.SEARCH_GTE, WorkerBdbj.RO_FOR_SCAN);
+					nextLuid : for (int left = limit;;) {
+						if (null == status) {
+							break collectLuids;
+						}
+						final byte[] keyData = key.getData();
+						if (!WorkerBdbj.compareBytes(keyData, 0, bufferBytes, 0, 2)) {
+							break collectLuids;
+						}
+						final RecordBdbj record = new RecordBdbj();
+						record.luid = WorkerBdbj.readLow6AsLong(keyData, 2);
+						record.scheduleBits = scheduleBits;
+						/** TODO: add in-memory cache check here */
+						//
+						recordsLuids.offerLast(record);
+						if (--left == 0) {
+							break collectLuids;
+						}
+						status = cursorItemQueue.get(key, null, Get.NEXT, WorkerBdbj.RO_FOR_SCAN);
+						continue nextLuid;
+					}
+				}
+				
+				if (!recordsLuids.hasNext()) {
+					return;
+				}
+				
+				collectGuids : try (final Cursor cursorItem = xct.getCursorItem(this)) {
+					nextLuid : for (;;) {
+						final RecordBdbj record = recordsLuids.pollFirst();
+						if (record == null) {
+							break collectGuids;
+						}
+						if (record.guid != null) {
+							/** TODO: should be set by in-memory cache check */
+							targetScheduled.offerLast(record);
+							continue nextLuid;
+						}
+						WorkerBdbj.writeLongAsLow6(bufferBytes, 0, record.luid);
+						key.setData(bufferBytes, 0, 6);
+						if (null == cursorItem.get(key, value, Get.SEARCH, WorkerBdbj.RO_FOR_SCAN)) {
+							recordsInvalid.offerLast(record);
+							continue nextLuid;
+						}
+						record.guid = Guid.readGuid(value.getData(), 2);
+						targetScheduled.offerLast(record);
+						continue nextLuid;
+					}
+				}
+			}
+			
+			if (!recordsInvalid.hasNext()) {
+				return;
+			}
+			try (XctBdbj xct = this.createNewWorkerTransaction()) {
+				deleteInvalid : try (final Cursor cursorItemQueue = xct.getCursorItemQueue(this)) {
+					nextRecord : for (;;) {
+						final RecordBdbj record = recordsInvalid.pollFirst();
+						if (record == null) {
+							break deleteInvalid;
+						}
+						WorkerBdbj.writeShort(bufferBytes, 0, record.scheduleBits);
+						WorkerBdbj.writeLongAsLow6(bufferBytes, 2, record.luid);
+						key.setData(bufferBytes, 0, 2 + 6);
+						if (null != cursorItemQueue.get(key, null, Get.SEARCH, WorkerBdbj.RO_FOR_DROP)) {
+							WorkerBdbj.LOG.event(//
+									"BDBJ-WORKER:INVALID:SCHEDULE",
+									"searchScheduled invalid records detected and will be dropped, luid: " + record.luid//
+							);
+							cursorItemQueue.delete(WorkerBdbj.WO_FOR_DROP);
+						}
+						continue nextRecord;
+					}
+				}
+				xct.commit();
+			}
+		}
+	}
+	
+	@Override
+	public void start() throws Exception {
+		
+		this.environment = this.local.environment;
+		
+		assert this.environment != null : "Environment is NULL!";
+		
+		this.dbItem = this.local.dbItem;
+		this.dbItemGuid = this.local.dbItemGuid;
+		this.dbItemQueue = this.local.dbItemQueue;
+		this.dbTail = this.local.dbTail;
+		this.dbTree = this.local.dbTree;
+		this.dbTreeIndex = this.local.dbTreeIndex;
+		this.dbTreeUsage = this.local.dbTreeUsage;
+		
+		{
+			/** TODO: (and there is another place) */
+			final boolean transactional = !this.local.instanceType.allowTruncate() || true;
+			if (transactional) {
+				final TransactionConfig config = new TransactionConfig();
+				config.setReadCommitted(true);
+				config.setDurability(Durability.COMMIT_WRITE_NO_SYNC);
+				this.transactionConfig = config;
+			} else {
+				this.transactionConfig = null;
+			}
+		}
+		this.xctGlobal = this.transactionConfig != null
+			? new XctBdbjTxnTempGlobal(this, this.environment)
+			: new XctBdbjNoTxnGlobal(this);
+		
+		this.checkEnvironmentBug6();
+	}
+	
+	@Override
+	public void stop() throws Exception {
+		
+		if (this.environment == null) {
+			return;
+		}
+		
+		if (this.xctGlobal != null) {
+			try {
+				this.xctGlobal.close();
+			} catch (final DatabaseException e) {
+				// ignore
+			}
+			this.xctGlobal = null;
+		}
+		
+		this.dbItem = null;
+		this.dbItemGuid = null;
+		this.dbItemQueue = null;
+		this.dbTail = null;
+		this.dbTree = null;
+		this.dbTreeIndex = null;
+		this.dbTreeUsage = null;
+		this.environment = null;
+	}
+	
+	@Override
+	public long storageCalculate() throws Exception {
+		
+		return this.local.storageCalculate();
+	}
+	
+	@Override
+	public void storageTruncate() throws Exception {
+		
+		this.local.storageTruncate();
+	}
+	
+	@Override
+	public String toString() {
+		
+		return this.getClass().getSimpleName() + "(" + this.local + ")";
 	}
 	
 	void arsLinkDelete(//
@@ -941,210 +1387,6 @@ public class WorkerBdbj //
 		}
 	}
 	
-	private void checkEnvironmentBug6() {
-		
-		final Environment environment = this.environment;
-		if (environment != null && !environment.isValid()) {
-			WorkerBdbj.LOG.event(//
-					"BDBJ-WORKER:FAILURE:FATAL",
-					"Environment is invalid!",
-					Format.Throwable.toText(new IllegalStateException("this:" + this + ", env:" + environment))//
-			);
-			try {
-				this.stop();
-			} catch (final Throwable t) {
-				//
-			}
-			try {
-				environment.close();
-			} catch (final Throwable t) {
-				//
-			}
-			Runtime.getRuntime().exit(-37);
-		}
-	}
-	@Override
-	public void commitHighLevel() throws Exception {
-		
-		this.environment.sync();
-		// ignore, low-level faster on BDBJE
-	}
-	@Override
-	public void commitLowLevel() throws Exception {
-		
-		// ignore, low-level faster on BDBJE
-		this.checkEnvironmentBug6();
-	}
-	
-	@Override
-	public XctBdbj createGlobalCommonTransaction() {
-		
-		if (this.transactionConfig == null) {
-			return this.xctGlobal;
-		}
-		this.checkEnvironmentBug6();
-		this.xctGlobal.reset();
-		return this.xctGlobal;
-	}
-	
-	@Override
-	public XctBdbj createNewWorkerTransaction() {
-		
-		if (this.transactionConfig == null) {
-			return this.xctGlobal;
-		}
-		this.checkEnvironmentBug6();
-		this.xctGlobal.reset();
-		return new XctBdbjSimple(this, this.environment.beginTransaction(null, this.transactionConfig), CursorConfig.READ_COMMITTED);
-	}
-	
-	@Override
-	public RecordBdbj createRecordTemplate() {
-		
-		return new RecordBdbjTemplate();
-	}
-	
-	@Override
-	public ReferenceBdbj createReferenceTemplate() {
-		
-		return new ReferenceBdbj();
-	}
-	
-	/** @param txn
-	 * @param e
-	 * @throws RuntimeException */
-	private Exception handleTransactionTimeoutException(//
-			final XctBdbj txn,
-			final TransactionTimeoutException e//
-	) {
-		
-		final String text;
-		if (txn == this.xctGlobal) {
-			System.out.println(">>>>>> " + (text = "unexpected global transaction problem: txn=" + txn));
-			this.xctGlobal = this.transactionConfig != null
-				? new XctBdbjTxnTempGlobal(this, this.environment)
-				: new XctBdbjNoTxnGlobal(this);
-			txn.destroy();
-		} else {
-			txn.destroy();
-			System.out.println(">>>>>> " + (text = "unexpected task transaction problem: txn=" + txn));
-		}
-		return new RuntimeException(text, e);
-	}
-	
-	/** clean log, optional.
-	 *
-	 * @return non zero if something was achieved */
-	public int internStorageClean() {
-		
-		return this.environment.cleanLog();
-	}
-	
-	/** compress, optional. */
-	public void internStorageCompress() {
-		
-		this.environment.compress();
-	}
-	
-	/** force checkpoint, optional. */
-	public void internStorageForce() {
-		
-		final CheckpointConfig force = new CheckpointConfig();
-		force.setMinimizeRecoveryTime(false);
-		force.setForce(true);
-		this.environment.checkpoint(force);
-	}
-	
-	/** @return stats object */
-	public EnvironmentStats internStorageStats() {
-		
-		final StatsConfig config = new StatsConfig();
-		config.setFast(false);
-		return this.environment.getStats(config);
-	}
-	
-	/** sync, optional. Used by manual CLI command. */
-	public void internStorageSync() {
-		
-		this.environment.sync();
-	}
-	
-	/** @return */
-	public List<String> internStorageTables() {
-		
-		return this.environment.getDatabaseNames();
-	}
-	
-	@Override
-	public int readCheckReferenced(//
-			final BasicQueue<RecordBdbj> pendingRecords,
-			final BasicQueue<RecordBdbj> targetReferenced,
-			final BasicQueue<RecordBdbj> targetUnreferenced//
-	) throws Exception {
-		
-		this.checkEnvironmentBug6();
-		
-		final XctBdbjSimple txn = this.xctGlobal;
-		
-		try {
-			final byte[] bufferBytes = this.bufferBytes;
-			final DatabaseEntry key = this.key;
-			int count = 0;
-			
-			/** sort records (probably already sorted) */
-			if (!Engine.MODE_SIZE && pendingRecords.hasNext()) {
-				final SortedSet<RecordBdbj> set = new TreeSet<>(RecImpl.COMPARATOR_RECORD_GUID);
-				for (RecordBdbj record; (record = pendingRecords.pollFirst()) != null;) {
-					set.add(record);
-				}
-				for (final RecordBdbj record : set) {
-					pendingRecords.offerLast(record);
-				}
-			}
-			
-			try (final Cursor cursorTreeUsage = this.dbTreeUsage.openCursor(txn.txn, CursorConfig.READ_COMMITTED)) {
-				records : for (RecordBdbj record; (record = pendingRecords.pollFirst()) != null;) {
-					final Guid guid = record.guid;
-					
-					if (guid == Guid.GUID_NULL) {
-						WorkerBdbj.LOG.event(//
-								"BDBJ-WORKER:FAILURE:SUPPRESSED",
-								"readCheckReferenced is not supposed to get GUID_NULL record, ",
-								Format.Throwable.toText(new IllegalStateException("this:" + this + ", env:" + this.environment))//
-						);
-						targetReferenced.offerLast(record);
-						continue records;
-					}
-					
-					++count;
-					
-					/** (previousTargetX);luid6;keyX */
-					final int guidSize = Guid.writeGuid(guid, bufferBytes, 0);
-					key.setData(bufferBytes, 0, guidSize);
-					
-					/** scan first of multiple **/
-					if (null == cursorTreeUsage.get(key, null, Get.SEARCH_GTE, WorkerBdbj.RO_FOR_SCAN)) {
-						/** not referenced **/
-						targetUnreferenced.offerLast(record);
-						continue records;
-					}
-					
-					/** referenced or not based on found key match **/
-					final byte[] bytes = key.getData();
-					(Guid.readEquals(bytes, 0, guid)
-						? targetReferenced
-						: targetUnreferenced).offerLast(record);
-					
-					/** check next **/
-					continue records;
-				}
-			}
-			return count;
-		} catch (final TransactionTimeoutException e) {
-			throw this.handleTransactionTimeoutException(txn, e);
-		}
-	}
-	
 	int readContainerContentsRange(//
 			final XctBdbj xct,
 			final Function<ReferenceBdbj, ?> target,
@@ -1434,17 +1676,9 @@ public class WorkerBdbj //
 		}
 	}
 	
-	@Override
-	public void reset() {
-		
-		if (this.xctGlobal != null) {
-			this.xctGlobal.reset();
-		}
-	}
-	
 	int searchBetween(//
 			final XctBdbj xct, //
-			final Function<Long, ?> target, //
+			final Function<Value<RecordBdbj>, ?> target, //
 			final Guid name, //
 			final Guid value1, //
 			final Guid value2, //
@@ -1487,7 +1721,7 @@ public class WorkerBdbj //
 				return limit - left;
 			}
 			final long luid = WorkerBdbj.readLow6AsLong(keyData, keyLength + Guid.readGuidByteCount(keyData, keyLength));
-			target.apply(Long.valueOf(luid));
+			target.apply(new RecordBdbj(luid, null, (short) 0, (short) 0));
 			if (--left == 0) {
 				return limit;
 			}
@@ -1503,7 +1737,7 @@ public class WorkerBdbj //
 	
 	int searchEquals(//
 			final XctBdbj xct, //
-			final Collection<Long> target, //
+			final Function<Value<RecordBdbj>, ?> target, //
 			final Guid name, //
 			final Guid value1, //
 			final int limit//
@@ -1544,7 +1778,7 @@ public class WorkerBdbj //
 				return limit - left;
 			}
 			final long luid = WorkerBdbj.readLow6AsLong(bytes, keyLength + guidLength);
-			target.add(Long.valueOf(luid));
+			target.apply(Long.valueOf(luid));
 			if (--left == 0) {
 				return limit;
 			}
@@ -1556,230 +1790,5 @@ public class WorkerBdbj //
 						? WorkerBdbj.RO_FOR_READ
 						: null);
 		}
-	}
-	
-	@Override
-	public void searchScheduled(//
-			final short scheduleBits, //
-			final int limit, //
-			final BasicQueue<RecordBdbj> targetScheduled//
-	) throws Exception {
-		
-		this.checkEnvironmentBug6();
-		
-		final byte[] bufferBytes = new byte[2 + 6];
-		WorkerBdbj.writeShort(bufferBytes, 0, scheduleBits);
-		final DatabaseEntry key = this.key;
-		final DatabaseEntry value = this.value;
-		key.setData(bufferBytes, 0, 2);
-		
-		/** TODO: Not really good condition */
-		if (Engine.MODE_SIZE) {
-			
-			try (XctBdbj xct = this.createNewWorkerTransaction()) {
-				boolean changes = false;
-				selectSchedule : try (final Cursor cursorItemQueue = xct.getCursorItemQueue(this)) {
-					try (final Cursor cursorItem = xct.getCursorItem(this)) {
-						OperationResult status = cursorItemQueue.get(key, null, Get.SEARCH_GTE, WorkerBdbj.RO_FOR_SCAN);
-						nextLuid : for (int left = limit;;) {
-							if (null == status) {
-								break selectSchedule;
-							}
-							final byte[] keyData = key.getData();
-							if (!WorkerBdbj.compareBytes(keyData, 0, bufferBytes, 0, 2)) {
-								break selectSchedule;
-							}
-							final RecordBdbj record = new RecordBdbj();
-							record.luid = WorkerBdbj.readLow6AsLong(keyData, 2);
-							
-							key.setData(keyData, 2, 6);
-							if (null == cursorItem.get(key, value, Get.SEARCH, WorkerBdbj.RO_FOR_SCAN)) {
-								WorkerBdbj.LOG.event(//
-										"BDBJ-WORKER:INVALID:SCHEDULE",
-										"searchScheduled invalid records detected and will be dropped, luid: " + record.luid//
-								);
-								cursorItemQueue.delete(WorkerBdbj.WO_FOR_DROP);
-								changes = true;
-							} else //
-							{
-								record.guid = Guid.readGuid(value.getData(), 2);
-								record.scheduleBits = scheduleBits;
-								targetScheduled.offerLast(record);
-							}
-							if (--left == 0) {
-								break selectSchedule;
-							}
-							status = cursorItemQueue.get(key, null, Get.NEXT, WorkerBdbj.RO_FOR_SCAN);
-							continue nextLuid;
-						}
-					}
-				}
-				if (changes) {
-					xct.commit();
-				}
-			}
-			return;
-		}
-		{
-			final BasicQueue<RecordBdbj> recordsLuids = new FifoQueueLinked<>();
-			final BasicQueue<RecordBdbj> recordsInvalid = new FifoQueueLinked<>();
-			
-			try (XctBdbj xct = this.createGlobalCommonTransaction()) {
-				collectLuids : try (final Cursor cursorItemQueue = xct.getCursorItemQueue(this)) {
-					OperationResult status = cursorItemQueue.get(key, null, Get.SEARCH_GTE, WorkerBdbj.RO_FOR_SCAN);
-					nextLuid : for (int left = limit;;) {
-						if (null == status) {
-							break collectLuids;
-						}
-						final byte[] keyData = key.getData();
-						if (!WorkerBdbj.compareBytes(keyData, 0, bufferBytes, 0, 2)) {
-							break collectLuids;
-						}
-						final RecordBdbj record = new RecordBdbj();
-						record.luid = WorkerBdbj.readLow6AsLong(keyData, 2);
-						record.scheduleBits = scheduleBits;
-						/** TODO: add in-memory cache check here */
-						//
-						recordsLuids.offerLast(record);
-						if (--left == 0) {
-							break collectLuids;
-						}
-						status = cursorItemQueue.get(key, null, Get.NEXT, WorkerBdbj.RO_FOR_SCAN);
-						continue nextLuid;
-					}
-				}
-				
-				if (!recordsLuids.hasNext()) {
-					return;
-				}
-				
-				collectGuids : try (final Cursor cursorItem = xct.getCursorItem(this)) {
-					nextLuid : for (;;) {
-						final RecordBdbj record = recordsLuids.pollFirst();
-						if (record == null) {
-							break collectGuids;
-						}
-						if (record.guid != null) {
-							/** TODO: should be set by in-memory cache check */
-							targetScheduled.offerLast(record);
-							continue nextLuid;
-						}
-						WorkerBdbj.writeLongAsLow6(bufferBytes, 0, record.luid);
-						key.setData(bufferBytes, 0, 6);
-						if (null == cursorItem.get(key, value, Get.SEARCH, WorkerBdbj.RO_FOR_SCAN)) {
-							recordsInvalid.offerLast(record);
-							continue nextLuid;
-						}
-						record.guid = Guid.readGuid(value.getData(), 2);
-						targetScheduled.offerLast(record);
-						continue nextLuid;
-					}
-				}
-			}
-			
-			if (!recordsInvalid.hasNext()) {
-				return;
-			}
-			try (XctBdbj xct = this.createNewWorkerTransaction()) {
-				deleteInvalid : try (final Cursor cursorItemQueue = xct.getCursorItemQueue(this)) {
-					nextRecord : for (;;) {
-						final RecordBdbj record = recordsInvalid.pollFirst();
-						if (record == null) {
-							break deleteInvalid;
-						}
-						WorkerBdbj.writeShort(bufferBytes, 0, record.scheduleBits);
-						WorkerBdbj.writeLongAsLow6(bufferBytes, 2, record.luid);
-						key.setData(bufferBytes, 0, 2 + 6);
-						if (null != cursorItemQueue.get(key, null, Get.SEARCH, WorkerBdbj.RO_FOR_DROP)) {
-							WorkerBdbj.LOG.event(//
-									"BDBJ-WORKER:INVALID:SCHEDULE",
-									"searchScheduled invalid records detected and will be dropped, luid: " + record.luid//
-							);
-							cursorItemQueue.delete(WorkerBdbj.WO_FOR_DROP);
-						}
-						continue nextRecord;
-					}
-				}
-				xct.commit();
-			}
-		}
-	}
-	
-	@Override
-	public void start() throws Exception {
-		
-		this.environment = this.local.environment;
-		
-		assert this.environment != null : "Environment is NULL!";
-		
-		this.dbItem = this.local.dbItem;
-		this.dbItemGuid = this.local.dbItemGuid;
-		this.dbItemQueue = this.local.dbItemQueue;
-		this.dbTail = this.local.dbTail;
-		this.dbTree = this.local.dbTree;
-		this.dbTreeIndex = this.local.dbTreeIndex;
-		this.dbTreeUsage = this.local.dbTreeUsage;
-		
-		{
-			/** TODO: (and there is another place) */
-			final boolean transactional = !this.local.instanceType.allowTruncate() || true;
-			if (transactional) {
-				final TransactionConfig config = new TransactionConfig();
-				config.setReadCommitted(true);
-				config.setDurability(Durability.COMMIT_WRITE_NO_SYNC);
-				this.transactionConfig = config;
-			} else {
-				this.transactionConfig = null;
-			}
-		}
-		this.xctGlobal = this.transactionConfig != null
-			? new XctBdbjTxnTempGlobal(this, this.environment)
-			: new XctBdbjNoTxnGlobal(this);
-		
-		this.checkEnvironmentBug6();
-	}
-	
-	@Override
-	public void stop() throws Exception {
-		
-		if (this.environment == null) {
-			return;
-		}
-		
-		if (this.xctGlobal != null) {
-			try {
-				this.xctGlobal.close();
-			} catch (final DatabaseException e) {
-				// ignore
-			}
-			this.xctGlobal = null;
-		}
-		
-		this.dbItem = null;
-		this.dbItemGuid = null;
-		this.dbItemQueue = null;
-		this.dbTail = null;
-		this.dbTree = null;
-		this.dbTreeIndex = null;
-		this.dbTreeUsage = null;
-		this.environment = null;
-	}
-	
-	@Override
-	public long storageCalculate() throws Exception {
-		
-		return this.local.storageCalculate();
-	}
-	
-	@Override
-	public void storageTruncate() throws Exception {
-		
-		this.local.storageTruncate();
-	}
-	
-	@Override
-	public String toString() {
-		
-		return this.getClass().getSimpleName() + "(" + this.local + ")";
 	}
 }
