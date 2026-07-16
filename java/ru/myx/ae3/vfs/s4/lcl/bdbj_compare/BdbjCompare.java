@@ -34,7 +34,6 @@ import com.sleepycat.je.TransactionConfig;
 import ru.myx.ae3.Engine;
 import ru.myx.ae3.base.BaseObject;
 import ru.myx.ae3.binary.TransferCopier;
-import ru.myx.ae3.common.Value;
 import ru.myx.ae3.e4.act.Manager.Factory.TYPE;
 import ru.myx.ae3.e4.act.ProcessExecutionType;
 import ru.myx.ae3.help.Create;
@@ -1038,7 +1037,7 @@ public class BdbjCompare
 
 	@Override
 	public int searchBetween(//
-			final Function<Value<RecordBdbj>, ?> target,
+			final Function<RecordBdbj, ?> target,
 			final Guid name,
 			final Guid value1,
 			final Guid value2,
@@ -1065,8 +1064,12 @@ public class BdbjCompare
 				if (!BdbjCompare.compareBytes(bytes, 0, this.bufferBytes, 0, keyLength) || Guid.readCompare(bytes, keyLength, value2) > 0) {
 					return limit - left;
 				}
+				final Guid matchedValue = Guid.readGuid(bytes, keyLength);
 				final long luid = BdbjCompare.readLow6AsLong(bytes, keyLength + Guid.readGuidByteCount(bytes, keyLength));
-				target.apply(Long.valueOf(luid));
+				final RecordBdbj result = new RecordBdbj();
+				result.luid = luid;
+				result.guid = matchedValue;
+				target.apply(result);
 			}
 			if (--left == 0) {
 				return limit;
@@ -1077,7 +1080,7 @@ public class BdbjCompare
 
 	@Override
 	public int searchEquals(//
-			final Function<Value<RecordBdbj>, ?> target,
+			final Function<RecordBdbj, ?> target,
 			final Guid name,
 			final Guid value1,
 			final int limit) throws Exception {
@@ -1103,7 +1106,10 @@ public class BdbjCompare
 					return limit - left;
 				}
 				final long luid = BdbjCompare.readLow6AsLong(bytes, keyLength + guidLength);
-				target.add(Long.valueOf(luid));
+				final RecordBdbj result = new RecordBdbj();
+				result.luid = luid;
+				result.guid = value1;
+				target.apply(result);
 			}
 			if (--left == 0) {
 				return limit;

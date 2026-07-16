@@ -265,7 +265,7 @@ class XctBdbjSimple //
 
 	@Override
 	public int searchBetween(//
-			final Function<Value<RecordBdbj>, ?> target,
+			final Function<RecordBdbj, ?> target,
 			final Guid key,
 			final Guid value1,
 			final Guid value2,
@@ -277,7 +277,7 @@ class XctBdbjSimple //
 
 	@Override
 	public int searchEquals(//
-			final Function<Value<RecordBdbj>, ?> target,
+			final Function<RecordBdbj, ?> target,
 			final Guid key,
 			final Guid value,
 			final int limit) throws Exception {

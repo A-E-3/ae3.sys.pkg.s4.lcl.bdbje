@@ -28,7 +28,6 @@ import com.sleepycat.je.WriteOptions;
 
 import ru.myx.ae3.Engine;
 import ru.myx.ae3.binary.TransferCopier;
-import ru.myx.ae3.common.Value;
 import ru.myx.ae3.help.Format;
 import ru.myx.ae3.know.Guid;
 import ru.myx.ae3.report.Report;
@@ -1678,7 +1677,7 @@ public class WorkerBdbj //
 	
 	int searchBetween(//
 			final XctBdbj xct, //
-			final Function<Value<RecordBdbj>, ?> target, //
+			final Function<RecordBdbj, ?> target, //
 			final Guid name, //
 			final Guid value1, //
 			final Guid value2, //
@@ -1720,8 +1719,9 @@ public class WorkerBdbj //
 			if (!WorkerBdbj.compareBytes(keyData, 0, this.bufferBytes, 0, keyLength) || Guid.readCompare(keyData, keyLength, value2) > 0) {
 				return limit - left;
 			}
+			final Guid matchedValue = Guid.readGuid(keyData, keyLength);
 			final long luid = WorkerBdbj.readLow6AsLong(keyData, keyLength + Guid.readGuidByteCount(keyData, keyLength));
-			target.apply(new RecordBdbj(luid, null, (short) 0, (short) 0));
+			target.apply(new RecordBdbj(luid, matchedValue, (short) 0, (short) 0));
 			if (--left == 0) {
 				return limit;
 			}
@@ -1734,10 +1734,10 @@ public class WorkerBdbj //
 						: null);
 		}
 	}
-	
+
 	int searchEquals(//
 			final XctBdbj xct, //
-			final Function<Value<RecordBdbj>, ?> target, //
+			final Function<RecordBdbj, ?> target, //
 			final Guid name, //
 			final Guid value1, //
 			final int limit//
@@ -1778,7 +1778,7 @@ public class WorkerBdbj //
 				return limit - left;
 			}
 			final long luid = WorkerBdbj.readLow6AsLong(bytes, keyLength + guidLength);
-			target.apply(Long.valueOf(luid));
+			target.apply(new RecordBdbj(luid, value1, (short) 0, (short) 0));
 			if (--left == 0) {
 				return limit;
 			}
