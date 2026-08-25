@@ -3,7 +3,6 @@ Requires: \
 	ae3.api \
 	ae3.pkg.lib.bdbje \
 	ae3.sdk \
-	ae3.sys \
 	ae3.sys.pkg.s4 \
 
 Provides: \
