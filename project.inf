@@ -1,0 +1,13 @@
+Name: ae3.sys.pkg.s4.lcl.bdbje
+Requires: \
+	ae3.api \
+	ae3.pkg.lib.bdbje \
+	ae3.sdk \
+	ae3.sys \
+	ae3.sys.pkg.s4 \
+
+Provides: \
+	ae3.sys.pkg.s4.lcl.bdbje \
+	--source-process:compile-java \
+	source-process:ae3-packages \
+
